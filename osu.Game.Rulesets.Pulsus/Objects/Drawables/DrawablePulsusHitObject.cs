@@ -29,6 +29,9 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
         public readonly int PositionIndex;
         public PulsusAction BindAction => (PulsusAction)PositionIndex - 1;
 
+        public Container? container { get; private set; }
+        public DrawablePulsusApproachCircle? ApproachCircle;
+
         public DrawablePulsusHitObject(PulsusHitObject hitObject)
             : base(hitObject)
         {
@@ -48,18 +51,42 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
             });
             AddRangeInternal(new Drawable[]
             {
-                HitArea = new HitReceptor
+                container = new Container
                 {
-                    Hit = () =>
+                    Children = new Drawable[]
                     {
-                        if (AllJudged)
-                            return false;
+                        HitArea = new HitReceptor
+                        {
+                            Hit = () =>
+                            {
+                                if (AllJudged)
+                                    return false;
 
-                        UpdateResult(true);
-                        return true;
-                    },
+                                UpdateResult(true);
+                                return true;
+                            },
+                        },
+
+                        ApproachCircle = new DrawablePulsusApproachCircle()
+                        {
+                            Size = new Vector2(4,4),
+                            Origin = Anchor.Centre,
+                            Position = OriginPosition,
+
+                            Texture = textures.Get("character.png")
+                        }
+                    }
                 }
             });
+        }
+
+        protected override void UpdateInitialTransforms()
+        {
+            base.UpdateInitialTransforms();
+
+            ApproachCircle?.ScaleTo(40f, 600);
+
+            this.FadeInFromZero(time_fadein);
         }
 
         public override IEnumerable<HitSampleInfo> GetSamples() => new[]
@@ -84,20 +111,18 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
 
         protected override double InitialLifetimeOffset => time_preempt;
 
-        protected override void UpdateInitialTransforms() => this.FadeInFromZero(time_fadein);
-
         protected override void UpdateHitStateTransforms(ArmedState state)
         {
             switch (state)
             {
                 case ArmedState.Hit:
-                    this.ScaleTo(5, 1500, Easing.OutQuint).FadeOut(1500, Easing.OutQuint).Expire();
+                    this.ScaleTo(.1f, 1500, Easing.OutQuint).FadeOut(1500, Easing.OutQuint).Expire();
                     break;
 
                 case ArmedState.Miss:
                     const double duration = 1000;
 
-                    this.ScaleTo(0.8f, duration, Easing.OutQuint);
+                    this.ScaleTo(0.1f, duration, Easing.OutQuint);
                     this.MoveToOffset(new Vector2(0, 10), duration, Easing.In);
                     this.FadeColour(Color4.Red.Opacity(0.5f), duration / 2, Easing.OutQuint).Then().FadeOut(duration / 2, Easing.InQuint).Expire();
                     break;
