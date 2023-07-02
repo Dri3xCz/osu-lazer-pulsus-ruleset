@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using osu.Framework.Allocation;
-using osu.Framework.Extensions.Color4Extensions;
 using osu.Framework.Graphics;
 using osu.Framework.Graphics.Containers;
-using osu.Framework.Graphics.Sprites;
 using osu.Framework.Graphics.Textures;
 using osu.Framework.Input.Bindings;
 using osu.Framework.Input.Events;
@@ -16,7 +14,6 @@ using osu.Game.Beatmaps.ControlPoints;
 using osu.Game.Rulesets.Objects.Drawables;
 using osu.Game.Rulesets.Scoring;
 using osuTK;
-using osuTK.Graphics;
 
 namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
 {
@@ -24,6 +21,9 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
     {
         private const double time_preempt = 600;
         private const double time_fadein = 400;
+
+        private const float size = 4f;
+        private const float size_after = 4.2f;
 
         public HitReceptor? HitArea { get; private set; }
         public readonly int PositionIndex;
@@ -35,8 +35,6 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
         public DrawablePulsusHitObject(PulsusHitObject hitObject)
             : base(hitObject)
         {
-            Size = new Vector2(80);
-            Origin = Anchor.Centre;
             Position = hitObject.Position;
             PositionIndex = hitObject.PositionIndex;
         }
@@ -44,11 +42,6 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
         [BackgroundDependencyLoader]
         private void load(TextureStore textures)
         {
-            AddInternal(new Sprite
-            {
-                RelativeSizeAxes = Axes.Both,
-                Texture = textures.Get("coin"),
-            });
             AddRangeInternal(new Drawable[]
             {
                 container = new Container
@@ -67,13 +60,13 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
                             },
                         },
 
-                        ApproachCircle = new DrawablePulsusApproachCircle()
+                        ApproachCircle = new DrawablePulsusApproachCircle
                         {
-                            Size = new Vector2(4,4),
+                            Size = new Vector2(size),
                             Origin = Anchor.Centre,
                             Position = OriginPosition,
 
-                            Texture = textures.Get("character.png")
+                            Texture = textures.Get("approach_circle")
                         }
                     }
                 }
@@ -116,15 +109,15 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
             switch (state)
             {
                 case ArmedState.Hit:
-                    this.ScaleTo(.1f, 1500, Easing.OutQuint).FadeOut(1500, Easing.OutQuint).Expire();
+                    ApproachCircle?.ScaleTo(size_after, 100);
+                    ApproachCircle?.FadeTo(0, 100);
+                    this.ScaleTo(size_after, 100).Expire();
                     break;
 
                 case ArmedState.Miss:
-                    const double duration = 1000;
-
-                    this.ScaleTo(0.1f, duration, Easing.OutQuint);
-                    this.MoveToOffset(new Vector2(0, 10), duration, Easing.In);
-                    this.FadeColour(Color4.Red.Opacity(0.5f), duration / 2, Easing.OutQuint).Then().FadeOut(duration / 2, Easing.InQuint).Expire();
+                    ApproachCircle?.FadeColour(new Colour4(255, 0, 0, 255), 10);
+                    ApproachCircle?.ScaleTo(size_after, 100);
+                    this.ScaleTo(size_after, 100).Expire();
                     break;
             }
         }
