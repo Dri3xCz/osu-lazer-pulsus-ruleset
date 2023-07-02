@@ -25,26 +25,17 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
         private const double time_preempt = 600;
         private const double time_fadein = 400;
 
-        public override bool HandlePositionalInput => true;
-
         public HitReceptor? HitArea { get; private set; }
-        public int PositionIndex;
-        public PulsusAction BindAction;
+        public readonly int PositionIndex;
+        public PulsusAction BindAction => (PulsusAction)PositionIndex - 1;
 
         public DrawablePulsusHitObject(PulsusHitObject hitObject)
             : base(hitObject)
         {
             Size = new Vector2(80);
-
             Origin = Anchor.Centre;
             Position = hitObject.Position;
             PositionIndex = hitObject.PositionIndex;
-            BindAction = getPulsusAction(PositionIndex);
-        }
-
-        private PulsusAction getPulsusAction(int positionIndex)
-        {
-            return (PulsusAction)positionIndex - 1;
         }
 
         [BackgroundDependencyLoader]
@@ -121,8 +112,6 @@ namespace osu.Game.Rulesets.Pulsus.Objects.Drawables
 
             public bool OnPressed(KeyBindingPressEvent<PulsusAction> e)
             {
-                Console.WriteLine(e.Action);
-
                 if (!(Hit?.Invoke() ?? false))
                     return false;
 

@@ -17,7 +17,7 @@ namespace osu.Game.Rulesets.Pulsus.UI
 
         protected override Drawable CreateCursor() => cursorSprite = new Sprite
         {
-            Scale = new Vector2(0.5f),
+            Scale = new Vector2(0),
             Origin = Anchor.Centre,
             Texture = cursorTexture,
         };
